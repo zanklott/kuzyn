@@ -362,10 +362,11 @@ class TWB:
                             % village.village_id
                         )
                         continue
+                    # share the reporter instance across village objects
                     if not rm:
-                        rm = village.rep_man
+                        rm = village.wrapper.reporter
                     else:
-                        village.rep_man = rm
+                        village.wrapper.reporter = rm
                     if (
                             "auto_set_village_names" in config["bot"]
                             and config["bot"]["auto_set_village_names"]
