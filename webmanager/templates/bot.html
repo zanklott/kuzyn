@@ -64,10 +64,40 @@
         </div>
     </div>
 </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header panel-decor"><span class="gold-underline">Konsola</span></div>
+            <div class="card-body">
+                <div id="bot-console" style="height:300px; overflow:auto; background:#000; color:#0f0; padding:10px; font-family:monospace; white-space:pre-wrap;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
 {% block scripts %}
 <script>
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function refreshLogs(){
+    $.getJSON('/logs?n=200', function(data){
+        if(!data || !data.logs) return;
+        var html = '';
+        data.logs.forEach(function(l){ html += '<div>' + escapeHtml(l) + '</div>'; });
+        $('#bot-console').html(html);
+        var el = $('#bot-console')[0]; if(el) el.scrollTop = el.scrollHeight;
+    });
+}
 function set_session_data(){
     alert('Aby zaktualizować sesję, zapisz plik cache/session.json ręcznie lub użyj funkcji w terminalu.');
 }
@@ -134,7 +164,9 @@ $(function(){
         }
     });
     refreshBotStatus();
+    refreshLogs();
     setInterval(refreshBotStatus, 5000);
+    setInterval(refreshLogs, 2000);
 });
 </script>
 {% endblock %}

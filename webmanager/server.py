@@ -7,6 +7,12 @@ import re
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from flask import Flask, jsonify, send_from_directory, request, render_template
+import logging
+
+try:
+    from webmanager.logbuffer import log_handler, get_logs as lb_get_logs
+except ImportError:
+    from logbuffer import log_handler, get_logs as lb_get_logs
 
 try:
     from webmanager.helpfile import help_file, buildings
@@ -19,6 +25,13 @@ bm = BotManager()
 
 app = Flask(__name__)
 app.config["DEBUG"] = True
+
+# Attach in-memory log handler so web UI can read recent log lines
+try:
+    logging.getLogger().addHandler(log_handler)
+    logging.getLogger().setLevel(logging.DEBUG)
+except Exception:
+    pass
 
 
 def pre_process_bool(key, value, village_id=None):
@@ -324,6 +337,16 @@ def get_home():
 def get_js():
     urlpath = os.path.join(os.path.dirname(__file__), "public")
     return send_from_directory(urlpath, "js.v2.js")
+
+
+@app.route('/logs', methods=['GET'])
+def get_logs():
+    # return last N log lines (default 200)
+    try:
+        n = int(request.args.get('n', 200))
+    except Exception:
+        n = 200
+    return jsonify({"logs": lb_get_logs(n)})
 
 
 @app.route('/app/config/set', methods=['GET'])
