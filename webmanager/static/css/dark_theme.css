@@ -21,6 +21,8 @@ h1,h2,h3,h4,h5{color:var(--gold-2);text-shadow:0 2px 6px rgba(181,137,43,0.12)}
 .btn-outline-gold{color:var(--gold-2);border:1px solid rgba(181,137,43,0.25);background:transparent}
 .table thead th{border-bottom:1px solid rgba(255,215,0,0.04);color:var(--gold-2)}
 .table tbody td{color:#dcdcdc}
+/* Improve contrast for secondary table rows (e.g., units/details rows) */
+tr.table-secondary td{background:linear-gradient(180deg,rgba(255,215,0,0.02),rgba(0,0,0,0.04));color:#e6e6e6;border-top:1px solid rgba(255,215,0,0.04)}
 .muted{color:var(--muted)}
 .panel-decor{border-left:4px solid rgba(181,137,43,0.9);padding-left:12px}
 .gold-underline{display:inline-block;position:relative}
