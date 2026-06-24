@@ -4,6 +4,7 @@ Brzmmi niebezpiecznie, ale to tylko wysyła farmy
 """
 
 from core.extractors import Extractor
+import re
 import logging
 import time
 from datetime import datetime
@@ -456,6 +457,21 @@ class AttackManager:
         page = self.wrapper.get_url(url)
         if not page:
             return
+        # capture Accountmanager AJAX endpoints if available for direct farm sends
+        try:
+            txt = page.text if hasattr(page, 'text') else str(page)
+            m = re.search(r"Accountmanager\.send_units_link\s*=\s*'([^']+)'", txt)
+            if m:
+                link = m.group(1)
+                # normalize leading slash
+                if link.startswith('/'):
+                    link = link[1:]
+                self.send_units_link = link
+            else:
+                self.send_units_link = None
+        except Exception:
+            self.send_units_link = None
+
         self.farm_assistant_targets.update(Extractor.farm_assistant_targets(page))
         # if no targets found, dump the page for inspection
         if not self.farm_assistant_targets:
@@ -513,20 +529,57 @@ class AttackManager:
         href = link.get('href') if isinstance(link, dict) else None
         onclick = link.get('onclick') if isinstance(link, dict) else None
 
-        try:
-            if href and 'screen=am_farm' in href:
-                # Direct farm assistant link; request it and assume success if 200
-                resp = self.wrapper.get_url(href)
-                if resp:
+        # First, try the Accountmanager AJAX endpoint if available (preferred)
+        tpl = None
+        if isinstance(link, dict):
+            tpl = link.get('template')
+        if getattr(self, 'send_units_link', None) and tpl:
+            send_url = self.send_units_link
+            # try several common parameter combinations for the AJAX farm endpoint
+            payloads = [
+                {'target': vid, 'template': tpl},
+                {'target': vid, 'template_id': tpl},
+                {'id': vid, 'template_id': tpl},
+                {'village': self.village_id, 'target': vid, 'template_id': tpl},
+                {'source_village': self.village_id, 'target': vid, 'template_id': tpl},
+            ]
+            for data in payloads:
+                try:
+                    resp = self.wrapper.post_url(url=send_url, data=data)
+                    if resp and resp.status_code == 200 and 'error' not in (resp.text or '').lower():
+                        self.logger.debug("Triggered farm assistant AJAX %s for %s with payload %s", send_url, vid, data)
+                        return True
+                except Exception:
+                    continue
+
+        # Try several am_farm trigger patterns using href/onclick/template info
+        attempts = []
+        if isinstance(link, dict):
+            if link.get('href') and 'screen=am_farm' in (link.get('href') or ''):
+                attempts.append(link.get('href'))
+            if link.get('onclick') and re.search(r'sendUnits', link.get('onclick')):
+                # try common patterns
+                attempts.append(f"game.php?village={self.village_id}&screen=am_farm&farm_icon_{button.lower()}={vid}")
+                tpl = link.get('template')
+                if tpl:
+                    attempts.append(f"game.php?village={self.village_id}&screen=am_farm&template={tpl}")
+                    attempts.append(f"game.php?village={self.village_id}&screen=am_farm&send=1&target={vid}&template={tpl}")
+                # generic fallback param
+                attempts.append(f"game.php?village={self.village_id}&screen=am_farm&farm_village={vid}")
+
+        for url in attempts:
+            try:
+                resp = self.wrapper.get_url(url)
+                if resp and '<div class="error_box">' not in (resp.text if hasattr(resp, 'text') else ''):
+                    self.logger.debug("Triggered farm assistant URL %s for %s", url, vid)
                     return True
-            # if onclick contains sendUnits or similar, attempt to call am_farm with farm_icon param
-            if onclick and re.search(r'sendUnits', onclick):
-                farm_click = f"game.php?village={self.village_id}&screen=am_farm&farm_icon_{button.lower()}={vid}"
-                resp = self.wrapper.get_url(farm_click)
-                if resp:
-                    return True
-        except Exception:
-            pass
+            except Exception:
+                continue
+
+        # When farm_assistant is enabled we must not fall back to screen=place — fail gracefully
+        if self.farm_assistant:
+            self.logger.debug("Unable to trigger farm assistant action for %s via am_farm patterns", vid)
+            return False
 
         # fallback: use the usable place link (old behaviour)
         usable = link.get('usable') if isinstance(link, dict) else link

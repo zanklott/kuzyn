@@ -292,7 +292,11 @@ class Extractor:
                         m = re.search(r'sendUnits\s*\(\s*(\d+)\s*,\s*(\d+)\s*\)', onclick)
                     if m:
                         vid = m.group(1)
-                        # template = m.group(2)  # template id if needed
+                        template_id = None
+                        try:
+                            template_id = m.group(2)
+                        except Exception:
+                            template_id = None
 
                 # if no vid from onclick, try common href params
                 if not vid and href:
@@ -353,6 +357,14 @@ class Extractor:
                 if 'meta' not in target:
                     target['meta'] = {}
                 target['meta'].update({'safe': safe, 'resources': resources})
+                # attach template id if we parsed one
+                if 'links' in target and action.upper() in target['links']:
+                    # update the dict we stored earlier
+                    try:
+                        if template_id:
+                            target['links'][action.upper()].update({'template': template_id})
+                    except Exception:
+                        pass
 
         return targets
 
