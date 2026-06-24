@@ -26,12 +26,15 @@ class InMemoryLogHandler(logging.Handler):
         return buf[-last_n:]
 
 
-# global handler instance used by the webmanager
-log_handler = InMemoryLogHandler()
+# separate handlers for bot and http logs
+bot_log_handler = InMemoryLogHandler()
+http_log_handler = InMemoryLogHandler()
 
 
-def get_logs(n=200):
+def get_logs(kind='bot', n=200):
     try:
-        return log_handler.get_logs(n)
+        if kind == 'http':
+            return http_log_handler.get_logs(n)
+        return bot_log_handler.get_logs(n)
     except Exception:
         return []

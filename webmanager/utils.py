@@ -252,9 +252,9 @@ class BotManager:
         try:
             wd = os.path.join(os.path.dirname(__file__), "..")
             python_exe = sys.executable if hasattr(sys, 'executable') else 'python'
-            # Capture stdout/stderr so we can show logs in web UI
+            # Capture stdin/stdout/stderr so we can show logs in web UI and send commands
             self.proc = subprocess.Popen([python_exe, "twb.py"], cwd=wd, shell=False,
-                                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             # start a background thread to read subprocess output
             def _reader():
                 logger = logging.getLogger("BotSubprocess")
@@ -291,3 +291,14 @@ class BotManager:
         finally:
             self.proc = None
             self._reader_thread = None
+
+    def send_command(self, cmd: str):
+        """Send a command line to the bot subprocess via stdin."""
+        if not self.is_running() or not self.proc:
+            raise RuntimeError("Bot not running")
+        try:
+            # ensure newline
+            self.proc.stdin.write(cmd.rstrip('\n') + "\n")
+            self.proc.stdin.flush()
+        except Exception as e:
+            raise

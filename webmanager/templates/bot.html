@@ -71,7 +71,20 @@
         <div class="card">
             <div class="card-header panel-decor"><span class="gold-underline">Konsola</span></div>
             <div class="card-body">
-                <div id="bot-console" style="height:300px; overflow:auto; background:#000; color:#0f0; padding:10px; font-family:monospace; white-space:pre-wrap;"></div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Bot</h5>
+                        <div id="bot-console" style="height:300px; overflow:auto; background:#000; color:#0f0; padding:10px; font-family:monospace; white-space:pre-wrap;"></div>
+                        <div style="margin-top:8px; display:flex; gap:8px;">
+                            <input id="bot-cmd-input" class="form-control" placeholder="Wpisz komendę do bota (np. debug)" />
+                            <button id="bot-cmd-send" class="btn btn-sm btn-gold">Wyślij</button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>HTTP (access)</h5>
+                        <div id="http-console" style="height:360px; overflow:auto; background:#111; color:#ffb; padding:10px; font-family:monospace; white-space:pre-wrap;"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -89,13 +102,36 @@ function escapeHtml(text) {
         .replace(/'/g, '&#039;');
 }
 
-function refreshLogs(){
-    $.getJSON('/logs?n=200', function(data){
+function refreshBotLogs(){
+    $.getJSON('/logs?kind=bot&n=200', function(data){
         if(!data || !data.logs) return;
         var html = '';
         data.logs.forEach(function(l){ html += '<div>' + escapeHtml(l) + '</div>'; });
         $('#bot-console').html(html);
         var el = $('#bot-console')[0]; if(el) el.scrollTop = el.scrollHeight;
+    });
+}
+
+function refreshHttpLogs(){
+    $.getJSON('/logs?kind=http&n=200', function(data){
+        if(!data || !data.logs) return;
+        var html = '';
+        data.logs.forEach(function(l){ html += '<div>' + escapeHtml(l) + '</div>'; });
+        $('#http-console').html(html);
+        var el = $('#http-console')[0]; if(el) el.scrollTop = el.scrollHeight;
+    });
+}
+
+function sendBotCommand(cmd){
+    $.ajax({
+        url: '/bot/command',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({cmd: cmd})
+    }).done(function(){
+        $('#bot-cmd-input').val('');
+    }).fail(function(xhr){
+        alert('Błąd wysyłania komendy: ' + (xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : xhr.statusText));
     });
 }
 function set_session_data(){
@@ -164,9 +200,17 @@ $(function(){
         }
     });
     refreshBotStatus();
-    refreshLogs();
+    refreshBotLogs();
+    refreshHttpLogs();
     setInterval(refreshBotStatus, 5000);
-    setInterval(refreshLogs, 2000);
+    setInterval(refreshBotLogs, 2000);
+    setInterval(refreshHttpLogs, 2000);
+
+    $('#bot-cmd-send').on('click', function(){
+        var cmd = $('#bot-cmd-input').val();
+        if(cmd && cmd.trim()) sendBotCommand(cmd.trim());
+    });
+    $('#bot-cmd-input').on('keypress', function(e){ if(e.key === 'Enter'){ e.preventDefault(); $('#bot-cmd-send').click(); } });
 });
 </script>
 {% endblock %}

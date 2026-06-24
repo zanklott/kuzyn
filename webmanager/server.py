@@ -12,7 +12,7 @@ import importlib.util
 
 # Try package import first, fallback to loading the module file directly
 try:
-    from webmanager.logbuffer import log_handler, get_logs as lb_get_logs
+    from webmanager.logbuffer import bot_log_handler, http_log_handler, get_logs as lb_get_logs
 except Exception:
     try:
         # load from same directory as this file
@@ -20,7 +20,8 @@ except Exception:
         spec = importlib.util.spec_from_file_location('webmanager.logbuffer', lb_path)
         lb_mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(lb_mod)
-        log_handler = getattr(lb_mod, 'log_handler')
+        bot_log_handler = getattr(lb_mod, 'bot_log_handler')
+        http_log_handler = getattr(lb_mod, 'http_log_handler')
         lb_get_logs = getattr(lb_mod, 'get_logs')
     except Exception:
         # final fallback: no-op implementations
@@ -28,7 +29,8 @@ except Exception:
             def get_logs(self, n=0):
                 return []
 
-        log_handler = logging.NullHandler()
+        bot_log_handler = logging.NullHandler()
+        http_log_handler = logging.NullHandler()
         lb_get_logs = _Dummy().get_logs
 
 try:
@@ -43,10 +45,17 @@ bm = BotManager()
 app = Flask(__name__)
 app.config["DEBUG"] = True
 
-# Attach in-memory log handler so web UI can read recent log lines
+# Attach in-memory log handlers: bot logs and HTTP logs
 try:
-    logging.getLogger().addHandler(log_handler)
-    logging.getLogger().setLevel(logging.DEBUG)
+    # Bot logs should be delivered to bot_log_handler; the bot subprocess logger uses 'BotSubprocess'
+    logging.getLogger('BotSubprocess').addHandler(bot_log_handler)
+    logging.getLogger('BotSubprocess').setLevel(logging.DEBUG)
+
+    # HTTP/werkzeug logs -> http_log_handler and prevent propagation to root
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.addHandler(http_log_handler)
+    werkzeug_logger.setLevel(logging.INFO)
+    werkzeug_logger.propagate = False
 except Exception:
     pass
 
@@ -363,7 +372,21 @@ def get_logs():
         n = int(request.args.get('n', 200))
     except Exception:
         n = 200
-    return jsonify({"logs": lb_get_logs(n)})
+    kind = request.args.get('kind', 'bot')
+    return jsonify({"logs": lb_get_logs(kind=kind, n=n)})
+
+
+@app.route('/bot/command', methods=['POST'])
+def bot_command():
+    data = request.get_json() or {}
+    cmd = data.get('cmd') or request.form.get('cmd')
+    if not cmd:
+        return jsonify({"error": "No cmd provided"}), 400
+    try:
+        bm.send_command(cmd)
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/app/config/set', methods=['GET'])
