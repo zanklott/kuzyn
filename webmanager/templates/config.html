@@ -2,6 +2,10 @@
 
 {% block content %}
 <div class="row">
+ 	<div class="col-12">
+	<div class="card">
+	  <div class="card-header panel-decor"><span class="gold-underline">Konfiguracja</span></div>
+	  <div class="card-body">
 	<ul class="nav nav-tabs">
 		{% for section in config %}
 		  <li class="nav-item">
@@ -9,14 +13,18 @@
 		  </li>
 		{% endfor %}
 	</ul>
-	 <a id="save_config" class="btn btn-success disabled">Zapisz</a>
+	 <a id="save_config" class="btn btn-gold disabled">Zapisz</a>
+	  </div>
+	</div>
+	</div>
 </div>
 
-<div class="row border">
-	<div class="tab-content">
+<div class="row">
+    <div class="col-12">
+    <div class="tab-content card">
 		{% for section in config %}
 		<div role="tabpanel" class="tab-pane container fade" id="{{section}}">
-			<h4>{{section}}</h4>
+			<h4 class="gold-underline">{{section}}</h4>
 			{% if section in helpfile %}
 				<i>{{helpfile[section]}}</i>
 			{% endif %}

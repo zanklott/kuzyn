@@ -2,12 +2,19 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-lg-8">
-        {{ config | safe }}
-    </div>
-    <div class="col-lg-4">
-        <h4>Wsie</h4>
-        <ul class="list-group">
+		<div class="col-lg-8">
+				<div class="card">
+					<div class="card-header panel-decor">Konfiguracja wsi</div>
+					<div class="card-body">
+				{{ config | safe }}
+					</div>
+				</div>
+		</div>
+		<div class="col-lg-4">
+				<div class="card">
+					<div class="card-header panel-decor">Wsie</div>
+					<div class="card-body">
+				<ul class="list-group">
                 {% for village in data.config.get('villages', {}) %}
 				<li class="list-group-item {% if current_select == village %} active {% endif %} ">
 					<a class="list-group-item-action" href="/village?id={{ village }}">
@@ -21,13 +28,15 @@
 							Wieś {{ village }}
 						{% endif %}
 					</a>
-                    {% if current_select == village %}
-                        <button id="save_config" class="btn btn-success btn-sm float-right disabled" disabled>Zapisz</button>
-                    {% endif %}
-                </li>
+					{% if current_select == village %}
+						<button id="save_config" class="btn btn-gold btn-sm float-right disabled" disabled>Zapisz</button>
+					{% endif %}
+				</li>
                 {% endfor %}
 
         </ul>
+		  </div>
+		</div>
     </div>
 
 </div>

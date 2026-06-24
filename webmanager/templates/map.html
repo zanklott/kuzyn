@@ -37,14 +37,23 @@
     }
 </style>
 <div class="row">
-    <div class="col-lg-10">
-        <div style="margin-bottom:10px"><button id="refresh_map" class="btn btn-sm btn-primary">Odśwież mapę</button></div>
-        <table id="grid"></table>
-    </div>
-    <div class="col-lg-2">
-        <h4 id="v_name"></h4>
-        <p id="v_data"></p>
-    </div>
+        <div class="col-lg-10">
+                <div style="margin-bottom:10px"><button id="refresh_map" class="btn btn-gold btn-sm">Odśwież mapę</button></div>
+                <div class="card">
+                    <div class="card-body">
+                        <table id="grid"></table>
+                    </div>
+                </div>
+        </div>
+        <div class="col-lg-2">
+                <div class="card">
+                    <div class="card-header panel-decor">Szczegóły</div>
+                    <div class="card-body">
+                        <h5 id="v_name" class="gold-underline"></h5>
+                        <p id="v_data" class="muted"></p>
+                    </div>
+                </div>
+        </div>
 
 </div>
 {% endblock %}

@@ -3,10 +3,12 @@
 {% block content %}
 
 <div class="row">
-    <div class="col-lg-4">
-        <h4>Bot</h4>
-        Status:
-        <div id="bot-status">
+        <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header panel-decor"><span class="gold-underline">Bot</span></div>
+                    <div class="card-body">
+                <h4 class="muted">Status</h4>
+                <div id="bot-status">
         {% if data.status %}
             <button id="bot-toggle" class="btn btn-sm btn-success" data-status="1">Aktywny — Zatrzymaj</button>
         {% else %}
@@ -14,15 +16,19 @@
             <br />
             <i>Zignoruj to, jeśli uruchamiasz twb.py samodzielnie</i>
         {% endif %}
-        </div>
+                </div>
 
-        <p>Obecna sesja: {{session.endpoint}}</p>
-        <input type="text" id="session_data" class="form-control" value="{{session.raw}}"/>
-        <button class="btn btn-success btn-sm" onclick="set_session_data()">Aktualizuj</button>
-    </div>
+                <p class="muted">Obecna sesja: {{session.endpoint}}</p>
+                <input type="text" id="session_data" class="form-control" value="{{session.raw}}"/>
+                <button class="btn btn-gold btn-sm" onclick="set_session_data()">Aktualizuj</button>
+                    </div>
+                </div>
+        </div>
     <div class="col-lg-8">
-        <h4>Runtime bota</h4>
-        <div id="bot-runtime">
+                <div class="card">
+                    <div class="card-header panel-decor"><span class="gold-underline">Runtime bota</span></div>
+                    <div class="card-body">
+                <div id="bot-runtime">
             {% if data.bot %}
                 <table class="table table-striped table-sm">
                     <thead>
@@ -53,6 +59,8 @@
             {% else %}
                 <p>Brak danych bota lub bot nie działa.</p>
             {% endif %}
+</div>
+          </div>
         </div>
     </div>
 </div>

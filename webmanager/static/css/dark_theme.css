@@ -1,0 +1,40 @@
+/* Dark theme with golden accents for TWB webmanager */
+:root{
+  --bg:#0b0b0f;
+  --panel:#0f1114;
+  --muted:#9aa0a6;
+  --gold-1:#b3872b;
+  --gold-2:#ffd97a;
+  --accent:linear-gradient(90deg,var(--gold-1),var(--gold-2));
+}
+html,body{height:100%;background:var(--bg);color:#e6e6e6;font-family:Segoe UI,Roboto,Arial,Helvetica,sans-serif}
+.wrapper{min-height:100%;}
+.container-fluid{padding:1.25rem}
+.navbar{background:linear-gradient(180deg,#0b0b0f,#121214)!important;border-bottom:1px solid rgba(255,215,0,0.06)}
+.navbar .nav-link{color:var(--gold-2)!important;font-weight:600;text-shadow:0 1px 0 rgba(0,0,0,0.6)}
+.navbar .nav-link.disabled{opacity:0.6}
+a.nav-link:hover{color:var(--gold-1)!important}
+h1,h2,h3,h4,h5{color:var(--gold-2);text-shadow:0 2px 6px rgba(181,137,43,0.12)}
+.card{background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.06));border:1px solid rgba(255,215,0,0.04)}
+.card .card-header{background:transparent;color:var(--gold-2);font-weight:700}
+.btn-gold{background:var(--gold-1);background-image:var(--accent);color:#0b0b0f;border:1px solid rgba(0,0,0,0.2);box-shadow:0 2px 8px rgba(181,137,43,0.12)}
+.btn-outline-gold{color:var(--gold-2);border:1px solid rgba(181,137,43,0.25);background:transparent}
+.table thead th{border-bottom:1px solid rgba(255,215,0,0.04);color:var(--gold-2)}
+.table tbody td{color:#dcdcdc}
+.muted{color:var(--muted)}
+.panel-decor{border-left:4px solid rgba(181,137,43,0.9);padding-left:12px}
+.gold-underline{display:inline-block;position:relative}
+.gold-underline:after{content:'';position:absolute;left:0;right:0;bottom:-4px;height:6px;background:linear-gradient(90deg,rgba(255,217,122,0.12),rgba(179,135,43,0.12));filter:blur(6px);z-index:-1}
+.badge-gold{background:linear-gradient(90deg,var(--gold-1),var(--gold-2));color:#0b0b0f;font-weight:700}
+/* decorative separators */
+.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(255,215,0,0.06),transparent);margin:1rem 0}
+/* form fields */
+.form-control{background:#0e0f12;border:1px solid rgba(255,255,255,0.04);color:#e6e6e6}
+.form-control:focus{box-shadow:0 0 0 0.2rem rgba(181,137,43,0.12);border-color:rgba(181,137,43,0.4)}
+/* small decorative icon placeholder */
+.gold-icon{width:28px;height:28px;border-radius:6px;background:var(--accent);display:inline-block;box-shadow:0 2px 6px rgba(0,0,0,0.6)}
+
+/* Responsive tweaks */
+@media (max-width:576px){
+  .navbar .nav-link{padding:.35rem .5rem}
+}
