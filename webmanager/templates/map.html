@@ -120,6 +120,19 @@
             $('#refresh_map').prop('disabled', false).text('Odśwież mapę');
         });
     });
+
+    function autoRefreshMap() {
+        if (!map_data || !map_data.grid || Object.keys(map_data.grid).length === 0) {
+            $.get('/map/refresh').done(function(res){
+                if (res && res.status && res.status === 'ok' && res.refreshed && res.refreshed.length > 0) {
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    // Poll periodically and only reload when the server reports refreshed map data
+    setInterval(autoRefreshMap, 5000);
 </script>
 {% endblock %}
  
